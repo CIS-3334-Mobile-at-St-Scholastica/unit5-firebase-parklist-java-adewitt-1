@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import cis3334.java_firebase_parklist.data.firebase.FirebaseService;
 import cis3334.java_firebase_parklist.data.model.Park; // Ensure this import is correct
 
 public class ParkViewModel extends ViewModel {
@@ -15,6 +17,7 @@ public class ParkViewModel extends ViewModel {
 
     // Internal mutable list for sample data
     private final ArrayList<Park> _sampleParksList = new ArrayList<>();
+    private final FirebaseService firebaseService = new FirebaseService();
 
     private final MutableLiveData<List<Park>> _parks = new MutableLiveData<>();
     public LiveData<List<Park>> getParks() {
@@ -38,42 +41,46 @@ public class ParkViewModel extends ViewModel {
     public void loadParks() {
         // Simulate loading parks (in future, this would be from a FirebaseService equivalent)
         // Post a new ArrayList to LiveData to ensure observers see it as a new list
-        _parks.setValue(new ArrayList<>(_sampleParksList));
-    }
-
-    public void selectPark(String parkId) {
-        if (parkId == null) {
-            _selectedPark.setValue(null);
-            return;
-        }
-        Park foundPark = null;
-        for (Park park : _sampleParksList) {
-            if (park.getId().equals(parkId)) {
-                foundPark = park;
-                break;
+        firebaseService.fetchParks(FirebaseService.ParkListCallback() {
+            @Override
+            public void onSuccess(List<Park> parks) {
+                _parks.setValue(parks);
             }
         }
-        _selectedPark.setValue(foundPark);
-    }
 
-    public void addPark(Park park) {
-        Park newParkWithId;
-        if (park.getId() == null || park.getId().isEmpty()) {
-            // Generate a simple unique ID for sample data if not provided
-            String generatedId = "park" + (_sampleParksList.size() + 1) + (int)(Math.random() * 1000);
-            newParkWithId = new Park(generatedId, park.getName(), park.getAddress(), park.getLatitude(), park.getLongitude());
-        } else {
-            newParkWithId = park;
+        public void selectPark(String parkId) {
+            if (parkId == null) {
+                _selectedPark.setValue(null);
+                return;
+            }
+            Park foundPark = null;
+            for (Park park : _sampleParksList) {
+                if (park.getId().equals(parkId)) {
+                    foundPark = park;
+                    break;
+                }
+            }
+            _selectedPark.setValue(foundPark);
         }
-        Log.d("ParkViewModel", "Adding park: " + newParkWithId.getName() + ", Instance: " + instanceId);
-        _sampleParksList.add(newParkWithId);
-        _parks.setValue(new ArrayList<>(_sampleParksList)); // Emit the updated list
-        Log.d("ParkViewModel", "Parks list size after add: " + (_parks.getValue() != null ? _parks.getValue().size() : 0));
-    }
 
-    @Override
-    protected void onCleared() {
-        super.onCleared();
-        Log.d("ParkViewModel", "Instance cleared: " + instanceId);
+        public void addPark(Park park) {
+            Park newParkWithId;
+            if (park.getId() == null || park.getId().isEmpty()) {
+                // Generate a simple unique ID for sample data if not provided
+                String generatedId = "park" + (_sampleParksList.size() + 1) + (int)(Math.random() * 1000);
+                newParkWithId = new Park(generatedId, park.getName(), park.getAddress(), park.getLatitude(), park.getLongitude());
+            } else {
+                newParkWithId = park;
+            }
+            Log.d("ParkViewModel", "Adding park: " + newParkWithId.getName() + ", Instance: " + instanceId);
+            _sampleParksList.add(newParkWithId);
+            _parks.setValue(new ArrayList<>(_sampleParksList)); // Emit the updated list
+            Log.d("ParkViewModel", "Parks list size after add: " + (_parks.getValue() != null ? _parks.getValue().size() : 0));
+        }
+
+        @Override
+        protected void onCleared() {
+            super.onCleared();
+            Log.d("ParkViewModel", "Instance cleared: " + instanceId);
+        }
     }
-}
