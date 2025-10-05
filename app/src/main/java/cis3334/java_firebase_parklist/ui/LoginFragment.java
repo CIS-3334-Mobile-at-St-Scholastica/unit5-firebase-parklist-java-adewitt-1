@@ -99,12 +99,14 @@ public class LoginFragment extends Fragment {
             }
         });
 
+
         authViewModel.getErrorMessage().observe(getViewLifecycleOwner(), errorMessage -> {
             if (errorMessage != null && !errorMessage.isEmpty()) {
                 Toast.makeText(getContext(), errorMessage, Toast.LENGTH_LONG).show();
                 authViewModel.clearErrorMessage(); // Clear message after showing
             }
         });
+
     }
 
     private void validateInput() {

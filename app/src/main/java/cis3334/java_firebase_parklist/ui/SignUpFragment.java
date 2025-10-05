@@ -100,6 +100,7 @@ public class SignUpFragment extends Fragment {
             }
         });
 
+
         authViewModel.getErrorMessage().observe(getViewLifecycleOwner(), errorMessage -> {
             if (errorMessage != null && !errorMessage.isEmpty()) {
                 Toast.makeText(getContext(), errorMessage, Toast.LENGTH_LONG).show();

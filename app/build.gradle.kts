@@ -55,6 +55,9 @@ dependencies {
     implementation(libs.androidx.navigation.ui)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
 
     // Standard Testing Libraries
     testImplementation(libs.junit)

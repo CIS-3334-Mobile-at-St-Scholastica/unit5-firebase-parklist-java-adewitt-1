@@ -2,30 +2,45 @@ package cis3334.java_firebase_parklist;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-// Import your R file, e.g.:
-// import cis3334.java_firebase_parklist.R;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
+
+import java.util.Objects;
+
+import cis3334.java_firebase_parklist.viewmodel.AuthViewModel;
 
 public class MainActivity extends AppCompatActivity {
+
+    private AuthViewModel authViewModel;
+    private NavController navController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // The 'enableEdgeToEdge()' equivalent is often handled by themes
-        // or can be manually set using WindowManager flags if specifically needed.
-        // For simplicity, we'll focus on basic content setting.
+        setContentView(R.layout.activity_main);
 
-        setContentView(R.layout.activity_main); // Make sure R is imported correctly
+        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.nav_host_fragment);
+        navController = navHostFragment.getNavController();
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+
+        authViewModel.getUser().observe(this, firebaseUser -> {
+            int currentDestinationId = Objects.requireNonNull(navController.getCurrentDestination()).getId();
+            if (firebaseUser != null) {
+                // User is signed in, navigate to the main app screen
+                if (currentDestinationId == R.id.loginFragment) {
+                    navController.navigate(R.id.action_loginFragment_to_parkListFragment);
+                } else if (currentDestinationId == R.id.signUpFragment) {
+                    navController.navigate(R.id.action_signUpFragment_to_parkListFragment);
+                }
+            } else {
+                // User is signed out, navigate to LoginFragment if we aren't already on an auth screen.
+                if (currentDestinationId != R.id.loginFragment && currentDestinationId != R.id.signUpFragment) {
+                    navController.navigate(R.id.action_parkListFragment_to_loginFragment);
+                }
+            }
         });
-
-        // Navigation is now handled by the NavHostFragment defined in activity_main.xml
-        // and the navigation graph res/navigation/nav_graph.xml
     }
 }
